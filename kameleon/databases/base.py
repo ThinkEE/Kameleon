@@ -40,6 +40,7 @@ class Database(object):
     def __init__(self, name, **connect_kwargs):
         self.name = name
         self.connect_kwargs = connect_kwargs
+        self.subscribe = False
 
     @inlineCallbacks
     def connect(self):

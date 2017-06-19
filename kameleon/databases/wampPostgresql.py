@@ -32,6 +32,10 @@ from postgresql import PostgresqlDatabase
 class WampPostgresqlDatabase(PostgresqlDatabase):
     TIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
+    def __init__(self, name, **connect_kwargs):
+        super(WampPostgresqlDatabase, self).__init__(name, connect_kwargs)
+        self.subscribe = True
+
     @classmethod
     def default(cls, obj):
         if isinstance(obj, datetime):
@@ -107,3 +111,7 @@ class WampPostgresqlDatabase(PostgresqlDatabase):
             print(err)
             # XXX Return special values if error. The code should be able to know
         returnValue(answer)
+
+    def propagate(self, model):
+        print("INFO: Propagating information on -- wamp.postgresql.propagadate.{0} --".format(model._meta.name))
+        self.connection.publish(u"wamp.postgresql.propagadate.{0}".format(model._meta.name), model.dictValues)

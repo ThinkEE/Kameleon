@@ -341,3 +341,6 @@ class PostgresqlDatabase(Database):
                 class_list.append(query.model_class(**kwargs))
 
         returnValue(class_list)
+
+    def propagate(self, model):
+        print("WARNING: Ignoring propagate -- Function not set")

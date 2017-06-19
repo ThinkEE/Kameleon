@@ -54,7 +54,8 @@ class ModelOptions(object):
                 on_conflict = [],
                 unique = [],
                 many_to_many = False,
-                order = []):
+                order = [],
+                propagate = False):
 
         # Model class
         self.model_class = cls
@@ -86,6 +87,9 @@ class ModelOptions(object):
 
         # Order to respect. Useful if table not created by the ORM
         self.order = order
+
+        # Should any change on a model be propagate
+        self.propagate = propagate
 
         # Map of fields
         self.fields = {}
@@ -207,6 +211,9 @@ class Model(with_metaclass(BaseModel)):
         # Initialize reverse relation as empty list.
         for field in self._meta.reverse_rel:
             object.__setattr__(self, field, [])
+
+        if self._meta.database.subscribe:
+            self._meta.database.connection.subscribe(self.propagate_update, u"wamp.postgresql.propagadate.{0}".format(self._meta.name))
 
     def __setattr__(self, name, value):
         """
@@ -370,6 +377,9 @@ class Model(with_metaclass(BaseModel)):
             # If an id exist then we should update
             if self.id:
                 pk = yield self.update(values)
+                if self._meta.propagate:
+                    self._meta.database.propagate(self)
+
             # Else it means we should create the row
             else:
                 # XXX To Do: What happen if insert failed. What should we return
@@ -380,3 +390,6 @@ class Model(with_metaclass(BaseModel)):
             self.id = pk
         else:
             yield self.insert(values)
+
+    def propagate_update(self, dict_values):
+        print("********* New value received for model", dict_values)
