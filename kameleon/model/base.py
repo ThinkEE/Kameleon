@@ -212,8 +212,8 @@ class Model(with_metaclass(BaseModel)):
         for field in self._meta.reverse_rel:
             object.__setattr__(self, field, [])
 
-        if self._meta.database.subscribe:
-            self._meta.database.connection.subscribe(self.propagate_update, u"wamp.postgresql.propagadate.{0}".format(self._meta.name))
+        if self._meta.propagate and self._meta.database.subscribe:
+            self._subscribe()
 
     def __setattr__(self, name, value):
         """
@@ -339,7 +339,6 @@ class Model(with_metaclass(BaseModel)):
         else:
             getattr(obj2, obj1._meta.name).append(obj1)
 
-
     @classmethod
     @inlineCallbacks
     def remove(cls, obj1, obj2):
@@ -391,5 +390,10 @@ class Model(with_metaclass(BaseModel)):
         else:
             yield self.insert(values)
 
-    def propagate_update(self, dict_values):
-        print("********* New value received for model", dict_values)
+    def _subscribe(self):
+        self._meta.database.connection.subscribe(self.propagate_update, u"wamp.postgresql.propagadate.{0}".format(self._meta.name))
+
+    def propagate_update(self, dictValues):
+        if dictValues["id"] == self.id:
+            for field, value in dictValues.iteritems():
+                self.__setattr__(field, value)

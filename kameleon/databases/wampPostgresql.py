@@ -33,7 +33,7 @@ class WampPostgresqlDatabase(PostgresqlDatabase):
     TIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
     def __init__(self, name, **connect_kwargs):
-        super(WampPostgresqlDatabase, self).__init__(name, connect_kwargs)
+        super(WampPostgresqlDatabase, self).__init__(name, **connect_kwargs)
         self.subscribe = True
 
     @classmethod
