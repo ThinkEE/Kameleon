@@ -42,9 +42,8 @@ class CharField(Field):
         return self.TYPE
 
     def create_field(self, name):
-        print("*****************", self.model_class._meta.database)
         field_string = ("{0} {1}({0})"
-                        .format(name, self.db_field, self.max_length))
+                        .format(name, self.model_class._meta.database.TYPES[self.TYPE], self.max_length))
 
         if self.unique:
             field_string += " UNIQUE"

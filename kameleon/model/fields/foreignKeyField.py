@@ -60,7 +60,7 @@ class ForeignKeyField(Field):
         reference.add_to_model(self.rel_model, self.related_name, self.name)
 
     def create_field(self, name):
-        field_string = "%s %s REFERENCES %s(%s)" %(self.name, self.db_field, self.rel_model._meta.table_name, self.reference.name)
+        field_string = "%s %s REFERENCES %s(%s)" %(self.name, self.TYPE, self.rel_model._meta.table_name, self.reference.name)
 
         if self.on_delete:
             field_string += " ON DELETE CASCADE"

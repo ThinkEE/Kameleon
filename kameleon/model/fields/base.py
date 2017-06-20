@@ -127,6 +127,21 @@ class Node(object):
     __ror__ = _e(OP.OR, inv=True)
     __rxor__ = _e(OP.XOR, inv=True)
 
+    __lt__ = _e(OP.LT)
+    __le__ = _e(OP.LTE)
+    __gt__ = _e(OP.GT)
+    __ge__ = _e(OP.GTE)
+    __lshift__ = _e(OP.IN)
+    __rshift__ = _e(OP.IS)
+    __mod__ = _e(OP.LIKE)
+    __pow__ = _e(OP.ILIKE)
+
+    def is_null(self, is_null=True):
+        print("Salut", Expression)
+        if is_null:
+            return Expression(self, OP.IS, None)
+        return Expression(self, OP.IS_NOT, None)
+
 class Field(Node):
     """
     A column on a table.
@@ -179,6 +194,11 @@ class Expression(Node):
 
     def parse(self):
         if isinstance(self.lhs, Field):
+            if isinstance(self.rhs, list):
+                _list = "', '".join(self.rhs)
+                return "{0}.{1} {2} ('{3}')".format(self.lhs.model_class._meta.table_name, self.lhs.name, self.op, _list)
+            elif self.rhs == None:
+                return "{0}.{1} {2} NULL".format(self.lhs.model_class._meta.table_name, self.lhs.name, self.op)
             return "{0}.{1} {2} '{3}'".format(self.lhs.model_class._meta.table_name, self.lhs.name, self.op, self.rhs)
         elif isinstance(self.lhs, Expression) and isinstance(self.rhs, Expression):
             left = self.lhs.parse()
