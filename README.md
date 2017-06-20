@@ -36,8 +36,14 @@ class Test1(Model):
 
 ### Usage
 
-`Write an example on how to use it`
+```
+test1s = yield (baseModels.Test1.all()
+              .where((baseModels.Test1.code == "code1") | (baseModels.Test1.code == "code2"), baseModels.Test1.user_id == 1 ).execute())
 
+if test1s[0]:
+    for test in test1s:
+        print(test.dictValues)
+```
 ## Installation
 
 ### Set up the environment

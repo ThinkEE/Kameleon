@@ -22,6 +22,8 @@
 # SOFTWARE.
 ################################################################################
 
+import operator
+
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from base import Query
@@ -56,11 +58,11 @@ class SelectQuery(Query):
         # Current table to use to join
         self._table_join = self.model_class
 
-    def where(self, *expression):
+    def where(self, *expressions):
         """
         Set the where clause
         """
-        self._where = expression
+        self._where = reduce(operator.and_, expressions)
         return self
 
     def switch(self, dest):
@@ -101,7 +103,7 @@ class SelectQuery(Query):
         # Parse result
         self._results = self.database.parse_select(self, result)
         self._total = len(self._results)
-        returnValue(self._results)
+        returnValue(self)
 
     def __iter__(self):
         return iter(self._results)

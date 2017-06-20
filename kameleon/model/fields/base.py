@@ -86,7 +86,6 @@ class Node(object):
     """
     Base-class for any part of a query which shall be composable.
     """
-
     _node_type = 'node'
 
     def __init__(self):
@@ -96,20 +95,42 @@ class Node(object):
         self._ordering = None  # ASC or DESC.
 
     def __eq__(self, rhs):
-        #print('EQ=======', self, type(self), rhs, OP.IS, OP.EQ)
         if rhs is None:
             return Expression(self, OP.IS, None)
         return Expression(self, OP.EQ, rhs)
 
-    def __and__(self, rhs):
-        #print('AND&&&&&&&&&&', self.lhs, self.op, self.rhs,rhs.lhs, rhs.op, rhs.rhs)
-        return Expression(self, OP.AND, rhs)
+    def _e(op, inv=False):
+        """
+        Lightweight factory which returns a method that builds an Expression
+        consisting of the left-hand and right-hand operands, using `op`.
+        """
+        def inner(self, rhs):
+            if inv:
+                return Expression(rhs, op, self)
+            return Expression(self, op, rhs)
+
+        return inner
+
+    __and__ = _e(OP.AND)
+    __or__ = _e(OP.OR)
+
+    __add__ = _e(OP.ADD)
+    __sub__ = _e(OP.SUB)
+    __mul__ = _e(OP.MUL)
+    __div__ = __truediv__ = _e(OP.DIV)
+    __xor__ = _e(OP.XOR)
+    __radd__ = _e(OP.ADD, inv=True)
+    __rsub__ = _e(OP.SUB, inv=True)
+    __rmul__ = _e(OP.MUL, inv=True)
+    __rdiv__ = __rtruediv__ = _e(OP.DIV, inv=True)
+    __rand__ = _e(OP.AND, inv=True)
+    __ror__ = _e(OP.OR, inv=True)
+    __rxor__ = _e(OP.XOR, inv=True)
 
 class Field(Node):
     """
     A column on a table.
     """
-
     _node_type = 'field'
 
     def __init__(self, unique=False, salt=False):
@@ -144,12 +165,24 @@ class Expression(Node):
     """
     _node_type = 'expression'
 
-    def __init__(self, lhs, op, rhs, flat=False):
+    def __init__(self, lhs, op, rhs):
         super(Expression, self).__init__()
-        self.lhs = lhs #left operator
-        self.op = op #operator
-        self.rhs = rhs #right operator
-        self.flat = flat
 
-    # def clone_base(self):
-    #     return Expression(self.lhs, self.op, self.rhs, self.flat)
+        # Left operator
+        self.lhs = lhs
+
+        # Operator
+        self.op = op
+
+         # Right operator
+        self.rhs = rhs
+
+    def parse(self):
+        if isinstance(self.lhs, Field):
+            return "{0}.{1} {2} '{3}'".format(self.lhs.model_class._meta.table_name, self.lhs.name, self.op, self.rhs)
+        elif isinstance(self.lhs, Expression) and isinstance(self.rhs, Expression):
+            left = self.lhs.parse()
+            right = self.rhs.parse()
+            return "({0} {1} {2})".format(left, self.op, right)
+        else:
+            print("ERROR: Logic error")

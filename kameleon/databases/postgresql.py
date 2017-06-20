@@ -220,17 +220,8 @@ class PostgresqlDatabase(Database):
             if isinstance(queryInstance._where, str):
                 where = "WHERE {0}".format(queryInstance._where)
             else:
-                for value in queryInstance._where:
-                    # if not isinstance(value, fields.base.Expression):
-                    # #if value == '':
-                    #     print('REMOVE')
-                    #     pass
-                    if i == 0:
-                        con = "WHERE "
-                    else:
-                        con = " AND "
-                    where += "%s %s.%s %s '%s'"%(con, value.lhs.model_class._meta.table_name, value.lhs.name, value.op, value.rhs)
-                    i+=1
+                where = queryInstance._where.parse()
+                where = "WHERE {0}".format(where)
 
         end = ";"
         if queryInstance._delete:
@@ -340,7 +331,7 @@ class PostgresqlDatabase(Database):
                 kwargs = dict(zip(query.model_class._meta.sorted_fields_names, res))
                 class_list.append(query.model_class(**kwargs))
 
-        returnValue(class_list)
+        return class_list
 
     def propagate(self, model):
         print("WARNING: Ignoring propagate -- Function not set")
