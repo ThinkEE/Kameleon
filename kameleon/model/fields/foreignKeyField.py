@@ -37,8 +37,6 @@ class ForeignKeyField(Field):
         self.on_delete = on_delete
         self.on_update = on_update
 
-        self.TYPE = self.reference.get_db_field()
-
     def add_to_model(self, model_class, name):
         self.name = name
         self.model_class = model_class
@@ -60,7 +58,8 @@ class ForeignKeyField(Field):
         reference.add_to_model(self.rel_model, self.related_name, self.name)
 
     def create_field(self, name):
-        field_string = "%s %s REFERENCES %s(%s)" %(self.name, self.TYPE, self.rel_model._meta.table_name, self.reference.name)
+        _type = self.reference.get_db_field()
+        field_string = "%s %s REFERENCES %s(%s)" %(self.name, _type, self.rel_model._meta.table_name, self.reference.name)
 
         if self.on_delete:
             field_string += " ON DELETE CASCADE"

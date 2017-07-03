@@ -137,7 +137,6 @@ class Node(object):
     __pow__ = _e(OP.ILIKE)
 
     def is_null(self, is_null=True):
-        print("Salut", Expression)
         if is_null:
             return Expression(self, OP.IS, None)
         return Expression(self, OP.IS_NOT, None)
