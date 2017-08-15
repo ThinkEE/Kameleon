@@ -44,7 +44,7 @@ class PostgresqlDatabase(Database):
         from txpostgres import txpostgres
         self.connection = txpostgres.Connection()
         try:
-            yield self.connection.connect(database=self.name, user=kwargs['user'], password=kwargs['password'])
+            yield self.connection.connect(host=kwargs['host'], database=self.name, user=kwargs['user'], password=kwargs['password'])
         except Exception as err:
             self.connection = None
             print("ERROR: Database connection error -- %s" %self.name)
