@@ -141,6 +141,9 @@ class Node(object):
             return Expression(self, OP.IS, None)
         return Expression(self, OP.IS_NOT, None)
 
+    def not_in(self, rhs):
+        return Expression(self, OP.NOT_IN, rhs)
+
 class Field(Node):
     """
     A column on a table.
