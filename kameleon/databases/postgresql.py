@@ -36,6 +36,7 @@ class PostgresqlDatabase(Database):
         'CHAR': 'varchar',
         'FLOAT': 'float',
         'INT': 'int',
+        'JSON': 'jsonb',
         'DATE': 'timestamp'
     }
 
@@ -188,7 +189,7 @@ class PostgresqlDatabase(Database):
         return query
 
     def generate_select(self, queryInstance):
-        target = '*' or queryInstance.params
+        target = '*'
 
         joint = ""
         if queryInstance._joins:
@@ -229,9 +230,11 @@ class PostgresqlDatabase(Database):
             if queryInstance.model_class._meta.primary_key:
                 end = " RETURNING id;"
         else:
-            queryType = "SELECT %s" %(target)
+            queryType = "SELECT {0}".format(",".join(target))
 
-        query = '%s FROM %s %s %s%s' %(queryType, queryInstance.model_class._meta.table_name, joint, where, end)
+        query = ('{0} FROM {1} {2} {3}{4}'
+                .format(queryType, queryInstance.model_class._meta.table_name,
+                        joint, where, end))
         # print(query)
         return query
 

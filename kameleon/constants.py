@@ -23,5 +23,5 @@
 ################################################################################
 
 POSTGRESQL = "Postgresql"
-POSTGRESQL_WAMP = "Postgresql_Wamp"
+TIMESCALE = "Timescale"
 MYSQL = "Mysql"

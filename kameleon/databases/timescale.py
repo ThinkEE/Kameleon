@@ -22,8 +22,14 @@
 # SOFTWARE.
 ################################################################################
 
-import fields
+from twisted.internet.defer import inlineCallbacks, returnValue
 
-from base import Model, BaseModel
+from postgresql import PostgresqlDatabase
 
-__all__ = ["fields", "Model", "BaseModel"]
+class TimescaleDatabase(PostgresqlDatabase):
+
+    def create_hypertable(self, current, _meta):
+        hypertable = ",".join(["'{0}'".format(x) for x in _meta.hypertable])
+        _operation = ("SELECT create_hypertable('{0}', {1});"
+                      .format(_meta.table_name, hypertable))
+        return "{0} {1}".format(current, _operation)

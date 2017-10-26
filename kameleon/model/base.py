@@ -55,7 +55,8 @@ class ModelOptions(object):
                 unique = [],
                 many_to_many = False,
                 order = [],
-                propagate = False):
+                propagate = False,
+                hypertable = []):
 
         # Model class
         self.model_class = cls
@@ -90,6 +91,9 @@ class ModelOptions(object):
 
         # Should any change on a model be propagate
         self.propagate = propagate
+
+        # Should the table change to hyper table.
+        self.hypertable = hypertable
 
         # Map of fields
         self.fields = {}
@@ -266,7 +270,12 @@ class Model(with_metaclass(BaseModel)):
             if i == len(fields):
                 if cls._meta.unique:
                     init = cls._meta.database.create_unique(init, cls._meta.unique)
+
                 init = cls._meta.database.create_table_field_end(init, field_string)
+
+                if cls._meta.hypertable:
+                    init = cls._meta.database.create_hypertable(init,
+                                                        cls._meta)
             else:
                 init = cls._meta.database.create_table_field(init, field_string)
             i+=1

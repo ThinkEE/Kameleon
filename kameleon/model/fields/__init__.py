@@ -27,10 +27,11 @@ from charField import CharField
 from floatField import FloatField
 from foreignKeyField import ForeignKeyField
 from integerField import IntegerField
+from jsonField import JsonField
 from primaryKeyField import PrimaryKeyField
 from referenceField import ReferenceField
 from timestampField import TimestampField
 
 __all__ = [ "BooleanField", "CharField", "FloatField", "ForeignKeyField",
-            "IntegerField", "PrimaryKeyField", "ReferenceField",
+            "IntegerField", "JsonField", "PrimaryKeyField", "ReferenceField",
             "TimestampField"]

@@ -22,8 +22,21 @@
 # SOFTWARE.
 ################################################################################
 
-import fields
+from base import Field
 
-from base import Model, BaseModel
+class JsonField(Field):
+    TYPE = 'JSON'
 
-__all__ = ["fields", "Model", "BaseModel"]
+    def __init__(self, *args, **kwargs):
+        super(JsonField, self).__init__(*args, **kwargs)
+
+    def create_field(self, name):
+        field_string = ("{0} {1}"
+                        .format(name,
+                            self.model_class._meta.database.TYPES[self.TYPE]))
+
+        return field_string
+
+    def insert_format(self, value):
+        value = "'%s'"%(str(value))
+        return value

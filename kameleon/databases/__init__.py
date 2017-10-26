@@ -23,7 +23,7 @@
 ################################################################################
 
 from postgresql import PostgresqlDatabase
-from wampPostgresql import WampPostgresqlDatabase
+from timescale import TimescaleDatabase
 from mysql import MysqlDatabase
 
-__all__ = ['PostgresqlDatabase', 'WampPostgresqlDatabase', 'MysqlDatabase']
+__all__ = ['PostgresqlDatabase', 'TimescaleDatabase', 'MysqlDatabase']
