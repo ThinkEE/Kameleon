@@ -40,18 +40,38 @@ class PostgresqlDatabase(Database):
         'DATE': 'timestamp'
     }
 
+    def connectionError(self, f):
+        print("ERROR: connecting failed with {0}".format(f.value))
+
     @inlineCallbacks
     def _connect(self, **kwargs):
-        from txpostgres import txpostgres
-        self.connection = txpostgres.Connection()
-        try:
-            yield self.connection.connect(host=kwargs['host'], database=self.name, user=kwargs['user'], password=kwargs['password'])
-        except Exception as err:
-            self.connection = None
-            print("ERROR: Database connection error -- %s" %self.name)
-            print(err)
-        else:
-            print("INFO: Database connected -- %s" %self.name)
+        from txpostgres import txpostgres, reconnection
+        from txpostgres.reconnection import DeadConnectionDetector
+
+        class LoggingDetector(DeadConnectionDetector):
+
+            def startReconnecting(self, f):
+                print("ERROR: database connection is down (error: {0})"
+                      .format(f.value))
+                return DeadConnectionDetector.startReconnecting(self, f)
+
+            def reconnect(self):
+                print("INFO: Reconnecting...")
+                return DeadConnectionDetector.reconnect(self)
+
+            def connectionRecovered(self):
+                print("INFO: connection recovered")
+                return DeadConnectionDetector.connectionRecovered(self)
+
+        self.connection = txpostgres.Connection(detector=LoggingDetector())
+        d = self.connection.connect(host=kwargs['host'],
+                                    database=self.name,
+                                    user=kwargs['user'],
+                                    password=kwargs['password'])
+        d.addErrback(self.connection.detector.checkForDeadConnection)
+        d.addErrback(self.connectionError)
+        yield d
+        print("INFO: Database connected -- %s" %self.name)
 
     @inlineCallbacks
     def _close(self, *args):
