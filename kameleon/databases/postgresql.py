@@ -125,8 +125,8 @@ class PostgresqlDatabase(Database):
 
     def generate_insert(self, query):
 
-        keys = ",".join([unicode(x) for x in query.values.keys()])
-        values = ",".join([unicode(x) for x in query.values.values()])
+        keys = ",".join([x.encode("utf-8") for x in query.values.keys()])
+        values = ",".join([x.encode("utf-8") for x in query.values.values()])
 
         str_query = ("INSERT INTO {0} ({1}) VALUES ({2})"
                     .format(query.model_class._meta.table_name, keys, values))
@@ -166,8 +166,8 @@ class PostgresqlDatabase(Database):
             _id = query.values["id"]
             del query.values["id"]
 
-        keys = ",".join([unicode(x) for x in query.values.keys()])
-        values = ",".join([unicode(x) for x in query.values.values()])
+        keys = ",".join([x.encode("utf-8") for x in query.values.keys()])
+        values = ",".join([x.encode("utf-8") for x in query.values.values()])
 
         if query.model_class._meta.primary_key:
             str_query = ("UPDATE {0} SET ({1})=({2}) WHERE id = {3}"

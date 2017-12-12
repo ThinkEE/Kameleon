@@ -73,5 +73,5 @@ class ForeignKeyField(Field):
         return field_string
 
     def insert_format(self, value):
-        value = "'%s'"%(str(value))
+        value = u"'{0}'".format(value)
         return value
