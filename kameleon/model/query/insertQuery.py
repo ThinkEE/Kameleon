@@ -44,14 +44,14 @@ class InsertQuery(Query):
 
     @inlineCallbacks
     def execute(self):
-        query = self.database.generate_insert(self)
+        query, values = self.database.generate_insert(self)
 
         # If return id. Use runQuery else use runOperation
         if self.return_id:
-            result = yield self.database.runQuery(query)
+            result = yield self.database.runQuery(query, values)
             if result and self.model_class._meta.primary_key:
                 returnValue(result[0][0])
         else:
-            yield self.database.runOperation(query)
+            yield self.database.runOperation(query, values)
 
         returnValue(None)

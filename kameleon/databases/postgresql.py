@@ -85,20 +85,20 @@ class PostgresqlDatabase(Database):
             print("INFO: Connection close cleanly")
 
     @inlineCallbacks
-    def runOperation(self, operation):
+    def runOperation(self, *args):
         try:
-            yield self.connection.runOperation(operation)
+            yield self.connection.runOperation(*args)
         except Exception as err:
-            print("ERROR: Running operation %s" %operation)
+            print("ERROR: Running operation {0}".format(args[0]))
             print(err)
 
     @inlineCallbacks
-    def runQuery(self, query):
+    def runQuery(self, *args):
         answer = []
         try:
-            answer = yield self.connection.runQuery(query)
+            answer = yield self.connection.runQuery(*args)
         except Exception as err:
-            print("ERROR: Running query %s" %query)
+            print("ERROR: Running query {0}".format(args[0]))
             print(err)
             # Return special values if error. The code should be able to know
         returnValue(answer)
@@ -126,20 +126,22 @@ class PostgresqlDatabase(Database):
     def generate_insert(self, query):
 
         keys = ",".join([x.encode("utf-8") for x in query.values.keys()])
-        values = ",".join([x.encode("utf-8") for x in query.values.values()])
+        inputs = ",".join([ "%s" for x in query.values.values()])
+        values = query.values.values()
 
         str_query = ("INSERT INTO {0} ({1}) VALUES ({2})"
-                    .format(query.model_class._meta.table_name, keys, values))
+                    .format(query.model_class._meta.table_name, keys, inputs))
 
         if query.on_conflict:
             str_query += (" ON CONFLICT ({0}) DO UPDATE SET ({1}) = ({2})"
-                         .format(",".join(query.on_conflict), keys, values))
+                         .format(",".join(query.on_conflict), keys, inputs))
+            values += values
 
         if query.return_id:
             str_query += " RETURNING id"
 
         str_query += ";"
-        return str_query
+        return str_query, values
 
     def generate_delete(self, query):
 
@@ -167,11 +169,11 @@ class PostgresqlDatabase(Database):
             del query.values["id"]
 
         keys = ",".join([x.encode("utf-8") for x in query.values.keys()])
-        values = ",".join([x.encode("utf-8") for x in query.values.values()])
+        inputs = ",".join([ "%s" for x in query.values.values()])
 
         if query.model_class._meta.primary_key:
             str_query = ("UPDATE {0} SET ({1})=({2}) WHERE id = {3}"
-                        .format(query.model_class._meta.table_name, keys, values, _id))
+                        .format(query.model_class._meta.table_name, keys, inputs, _id))
         else:
             # XXX To Do: If not id -> check if one of the field is Unique. If one is unique use it to update
             print("ERROR: Not primary key cannot update row. Need to be implemented")
@@ -181,7 +183,7 @@ class PostgresqlDatabase(Database):
             str_query += " RETURNING id"
 
         str_query += ";"
-        return str_query
+        return str_query, query.values.values()
 
     def generate_add(self, query):
         table_name = query.model_class._meta.table_name

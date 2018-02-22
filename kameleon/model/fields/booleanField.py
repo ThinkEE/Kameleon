@@ -35,5 +35,4 @@ class BooleanField(Field):
         return field_string
 
     def insert_format(self, value):
-        value = u"'{0}'".format(value)
         return value
