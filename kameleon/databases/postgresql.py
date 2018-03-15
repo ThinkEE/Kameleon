@@ -24,6 +24,7 @@
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 
+from psycopg2cffi import IntegrityError
 from base import Database
 
 class PostgresqlDatabase(Database):
@@ -88,6 +89,11 @@ class PostgresqlDatabase(Database):
     def runOperation(self, *args):
         try:
             yield self.connection.runOperation(*args)
+        except IntegrityError as err:
+            print(err.pgcode)
+            exc = Exception("Constraint Error")
+            exc.pgcode = err.pgcode
+            raise exc
         except Exception as err:
             print("ERROR: Running operation {0}".format(args[0]))
             print(err)
