@@ -90,7 +90,6 @@ class PostgresqlDatabase(Database):
         try:
             yield self.connection.runOperation(*args)
         except IntegrityError as err:
-            print(err.pgcode)
             exc = Exception("Constraint Error")
             exc.pgcode = err.pgcode
             raise exc
