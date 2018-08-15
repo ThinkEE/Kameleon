@@ -22,17 +22,18 @@
 # SOFTWARE.
 ################################################################################
 
-from booleanField import BooleanField
-from charField import CharField
-from dateField import DateField
-from floatField import FloatField
-from foreignKeyField import ForeignKeyField
-from integerField import IntegerField
-from jsonField import JsonField
-from primaryKeyField import PrimaryKeyField
-from referenceField import ReferenceField
-from timestampField import TimestampField
+from base import Field
 
-__all__ = [ "BooleanField", "CharField", "FloatField", "ForeignKeyField",
-            "IntegerField", "JsonField", "PrimaryKeyField", "ReferenceField",
-            "TimestampField", "DateField"]
+class DateField(Field):
+    TYPE = 'DATE'
+
+    def __init__(self, *args, **kwargs):
+        super(DateField, self).__init__(*args, **kwargs)
+
+    def create_field(self, name):
+        field_string = ("{0} {1}"
+                        .format(name, self.model_class._meta.database.TYPES[self.TYPE]))
+        return field_string
+
+    def insert_format(self, value):
+        return value

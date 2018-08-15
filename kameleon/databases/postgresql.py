@@ -38,7 +38,8 @@ class PostgresqlDatabase(Database):
         'FLOAT': 'float',
         'INT': 'int',
         'JSON': 'jsonb',
-        'DATE': 'timestamp'
+        'TIMESTAMP': 'timestamp',
+        'DATE': 'date'
     }
 
     def connectionError(self, f):
